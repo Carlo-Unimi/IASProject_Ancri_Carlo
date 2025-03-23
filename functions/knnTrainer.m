@@ -1,11 +1,10 @@
 function [recognRate, Mdl] = knnTrainer(trainFeat, testFeat, labels, ground_truth, k)
 
-
 recognRate = zeros(1, length(k));
 
 for aux = 1:length(k)
     
-    Mdl = fitcknn(trainFeat, labels, 'NumNeighbors', k(aux), 'Standardize', true);
+    Mdl = fitcknn(trainFeat, labels, 'NumNeighbors', k(aux));
 
     predictedLabel = predict(Mdl, testFeat);
 

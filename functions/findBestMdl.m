@@ -1,13 +1,13 @@
 function [bestRecognRate, bestMdl, bestInd] = findBestMdl(timeRecognRate, freqRecognRate, allRecognRate, timeMdl, freqMdl, allMdl)
 
 timeV = max(timeRecognRate);
-fprintf('Percentuale di riconoscimento massima sui tempi: %.3f\n', timeV);
+fprintf('Max recognition rate with only time features: %.3f\n', timeV);
 
 freqV = max(freqRecognRate);
-fprintf('Percentuale di riconoscimento massima sulle frequenze: %.3f\n', freqV);
+fprintf('Max recognition rate with only frequency features: %.3f\n', freqV);
 
 allV = max(allRecognRate);
-fprintf('Percentuale di riconoscimento massima sia su tempi che su frequenze: %.3f\n\n', allV);
+fprintf('Max recognition rate with all the features: %.3f\n\n', allV);
 
 maxV = [timeV, freqV, allV];
 

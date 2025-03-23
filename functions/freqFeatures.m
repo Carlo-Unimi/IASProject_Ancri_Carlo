@@ -1,9 +1,11 @@
 function [C, S, E, R, F, mfccs] = freqFeatures(filename, windowLength, stepLength)
 [y,fs] = audioread(filename);
+
 % check if mono
 if size(y,2)==2, y=sum(y,2)/2; end
-[M,nf] = windowize(y,windowLength*fs,stepLength*fs);
-Ham = window(@hamming, windowLength*fs);
+[M,nf] = windowize(y,round(windowLength*fs),round(stepLength*fs));
+Ham = window(@hamming, round(windowLength*fs));
+
 % initialization to zero
 C=zeros(1,nf);
 S=zeros(1,nf);
@@ -12,7 +14,7 @@ F=zeros(1,nf);
 E=zeros(1,nf);
 mfccs = zeros(13,nf);
 % parameterization for the MFCCs
-mfccParams = feature_mfccs_init(windowLength*fs, fs);
+mfccParams = feature_mfccs_init(round(windowLength*fs), fs);
 for i=1:nf
     frame = M(:,i);
     frame = frame.*Ham;

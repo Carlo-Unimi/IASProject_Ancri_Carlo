@@ -1,6 +1,6 @@
 function [E, EE, Z] = timedomainFeats(filename, windowLength, stepLength)
 [y,fs]=audioread(filename);
-% check if mono
+
 if size(y,2)==2, y=sum(y,2)/2; end
 [M,nf]=windowize(y,windowLength*fs,stepLength*fs);
 Ham = window(@hamming, windowLength*fs);

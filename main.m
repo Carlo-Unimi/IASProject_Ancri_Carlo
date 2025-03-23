@@ -1,98 +1,80 @@
-%% INIZIALIZZAZIONE
+%% INITIALIZATION
 clear; clc;
 
-disp('------------------------------');
-disp('|    ESECUZIONE INIZIATA     |');
-disp('------------------------------');
+disp('--------------------------------');
+disp('|       PROGRAM STARTED        |');
+disp('--------------------------------');
 
-subFolders = ["401 - Door knock", "402 - Mouse click", "403 - Keyboard typing"];
+subFolders = ["110 - Crow", "207 - Wind", "505 - Engine"];
 
-datasetPath = uigetdir(pwd, 'Selezionare la cartella del dataset.');
+datasetPath = uigetdir(pwd, 'Select the dataset dir.');
 addpath(genpath(datasetPath));
+addpath(genpath(uigetdir(pwd, 'Select the "[IASPROJECT] Ancri Carlo" dir.')));
+file_separator(datasetPath, subFolders);
+tic; % timer
 
-addpath(genpath(uigetdir(pwd, 'Selezionare la cartella [IASPROJECT] Ancri Carlo.')));
-
-tic; % cronometro
-
-file_separator(datasetPath, subFolders(1), subFolders(2), subFolders(3));
-
-windowLength = 0.5;
-stepLength = windowLength/2;
-
+windowLength = 1;
+stepLength = 0.6;
 
 % estrae tutte le features
-fprintf('Estraggo tutte le features di [Crow]...');
+fprintf('Extracting [Crow] features...');
 [crowTrainFeatF, crowTrainFeatT, crowTestFeatF, crowTestFeatT] = extractAllFeats(fullfile(datasetPath, subFolders(1)), windowLength, stepLength);
-fprintf(' estrazione completata.\n');
-fprintf('Estraggo tutte le features di [Wind]...');
+fprintf(' completed.\n');
+fprintf('Extracting [Wind] features...');
 [windTrainFeatF, windTrainFeatT, windTestFeatF, windTestFeatT] = extractAllFeats(fullfile(datasetPath, subFolders(2)), windowLength, stepLength);
-fprintf(' estrazione completata.\n');
-fprintf('Estraggo tutte le features di [Engine]...');
+fprintf(' completed.\n');
+fprintf('Extracting [Engine] features...');
 [engineTrainFeatF, engineTrainFeatT, engineTestFeatF, engineTestFeatT] = extractAllFeats(fullfile(datasetPath, subFolders(3)), windowLength, stepLength);
-fprintf(' estrazione completata.\n\n');
-fprintf('--- ESTRAZIONE DELLE FEATURES COMPLETATA ---\n\n\n');
+fprintf(' completed.\n\n');
+fprintf('--- FEATURES EXTRACTION COMPLETED ---\n\n\n');
 
 
+%% kNN ALGORITHM
+disp('Initializing the kNN model...');
+k = [1 5 10 15 30 50 100 200];
 
-%% algoritmo KNN
-disp('Inizializzo il modello kNN...');
-k = [5 10 20 50 100 200];
-
-% kNN [SOLO TEMPI]
 trainLabelCrow = ones(length(crowTrainFeatT), 1);
 trainLabelWind = repmat(2, length(windTrainFeatT), 1);
 trainLabelEngine = repmat(3, length(engineTrainFeatT), 1);
-
-timeTrainFeat = [crowTrainFeatT; windTrainFeatT; engineTrainFeatT];
-all_Labels = [trainLabelCrow; trainLabelWind; trainLabelEngine];
 
 testLabelCrow = ones(length(crowTestFeatT), 1);
 testLabelWind = repmat(2, length(windTestFeatT), 1);
 testLabelEngine = repmat(3, length(engineTestFeatT), 1);
 
-timeTestFeat = [crowTestFeatT; windTestFeatT; engineTestFeatT];
-ground_truth = [testLabelCrow; testLabelWind; testLabelEngine];
-
-[timeRecognRate, timeMdl] = knnTrainer(timeTrainFeat, timeTestFeat, all_Labels, ground_truth, k);
-
-
-% kNN [SOLO FREQUENZE]
-trainLabelCrow = ones(length(crowTrainFeatF), 1);
-trainLabelWind = repmat(2, length(windTrainFeatF), 1);
-trainLabelEngine = repmat(3, length(engineTrainFeatF), 1);
-
-freqTrainFeat = [crowTrainFeatF; windTrainFeatF; engineTrainFeatF];
 all_Labels = [trainLabelCrow; trainLabelWind; trainLabelEngine];
-
-testLabelCrow = ones(length(crowTestFeatF), 1);
-testLabelWind = repmat(2, length(windTestFeatF), 1);
-testLabelEngine = repmat(3, length(engineTestFeatF), 1);
-
-freqTestFeat = [crowTestFeatF; windTestFeatF; engineTestFeatF];
 ground_truth = [testLabelCrow; testLabelWind; testLabelEngine];
 
-[freqRecognRate, freqMdl] = knnTrainer(freqTrainFeat, freqTestFeat, all_Labels, ground_truth, k);
+% KNN [ONLY TIME FEATS]
+timeTrainFeat = [crowTrainFeatT windTrainFeatT engineTrainFeatT];
+timeTestFeat = [crowTestFeatT windTestFeatT engineTestFeatT];
 
+[timeTrainFeat, mn, st] = safe_normalize(timeTrainFeat);
+timeTestFeat = timeTestFeat';
+timeTestFeat = (timeTestFeat - repmat(mn, size(timeTestFeat, 1), 1)) ./repmat(st, size(timeTestFeat, 1), 1);
 
-% kNN [TUTTE LE FEATURES]
-trainLabelCrow = ones(length([crowTrainFeatF, crowTrainFeatT]), 1);
-trainLabelWind = repmat(2, length([windTrainFeatF, windTrainFeatT]), 1);
-trainLabelEngine = repmat(3, length([engineTrainFeatF, engineTrainFeatT]), 1);
+[timeRecognRate, timeMdl] = knnTrainer(timeTrainFeat, timeTestFeat, all_Labels', ground_truth, k);
 
-allTrainFeat = [[crowTrainFeatF, crowTrainFeatT]; [windTrainFeatF, windTrainFeatT]; [engineTrainFeatF, engineTrainFeatT]];
-all_Labels = [trainLabelCrow; trainLabelWind; trainLabelEngine];
+% KNN [ONLY FREQ FEATS]
+freqTrainFeat = [crowTrainFeatF windTrainFeatF engineTrainFeatF];
+freqTestFeat = [crowTestFeatF windTestFeatF engineTestFeatF];
 
-testLabelCrow = ones(length([crowTestFeatF, crowTestFeatT]), 1);
-testLabelWind = repmat(2, length([windTestFeatF, windTestFeatT]), 1);
-testLabelEngine = repmat(3, length([engineTestFeatF, engineTestFeatT]), 1);
+[freqTrainFeat, mn, st] = safe_normalize(freqTrainFeat);
+freqTestFeat = freqTestFeat';
+freqTestFeat = (freqTestFeat - repmat(mn, size(freqTestFeat, 1), 1)) ./repmat(st, size(freqTestFeat, 1), 1);
 
-allTestFeat = [[crowTestFeatF, crowTestFeatT]; [windTestFeatF, windTestFeatT]; [engineTestFeatF, engineTestFeatT]];
-ground_truth = [testLabelCrow; testLabelWind; testLabelEngine];
+[freqRecognRate, freqMdl] = knnTrainer(freqTrainFeat, freqTestFeat, all_Labels', ground_truth, k);
 
-[allRecognRate, allMdl] = knnTrainer(allTrainFeat, allTestFeat, all_Labels, ground_truth, k);
+% KNN [ALL FEATS]
+allTrainFeat = [[crowTrainFeatT windTrainFeatT engineTrainFeatT]; [crowTrainFeatF windTrainFeatF engineTrainFeatF]];
+allTestFeat = [[crowTestFeatT windTestFeatT engineTestFeatT]; [crowTestFeatF windTestFeatF engineTestFeatF]];
 
+[allTrainFeat, mn, st] = safe_normalize(allTrainFeat);
+allTestFeat = allTestFeat';
+allTestFeat = (allTestFeat - repmat(mn, size(allTestFeat, 1), 1)) ./repmat(st, size(allTestFeat, 1), 1);
 
+[allRecognRate, allMdl] = knnTrainer(allTrainFeat, allTestFeat, all_Labels', ground_truth, k);
 
+% kNN's recognition rate graphs
 recGraphs = figure;
 recGraphs.Position = [100, 100, 1500, 500];
 subplot(1, 3, 1); plot(k, timeRecognRate)
@@ -110,62 +92,50 @@ xlabel('k');
 title('All feat recognition rate (%)');
 grid on
 
-
-
-
+% best kNN model
 [bestRecognRate, Mdl, bestInd] = findBestMdl(timeRecognRate, freqRecognRate, allRecognRate, timeMdl, freqMdl, allMdl);
 
-names = ["sui tempi"; "sulle frequenze"; "sia su tempi che su frequenze"];
-disp('Trovo il modello più preciso...');
+names = ["time-feats"; "freq-feats"; "all-feats"];
+disp('Finding the best model...');
 [val, ind] = max(bestRecognRate);
-fprintf('Il rate massimo di riconoscimento è: %.3f, è ricavato con %d vicini dal modello allenato %s.\n\n', val, k(ind), names(bestInd));
+fprintf('The best recognition rate is: %.3f, achieved with %d neighbours, using the %s trained model.\n\n', val, k(ind), names(bestInd));
 
 
+%% PCA ALGORITHM
+disp('Applying the PCA algorithm using all the features...');
 
+featMatrix = [[crowTrainFeatF crowTestFeatF windTrainFeatF windTestFeatF engineTrainFeatF engineTestFeatF];
+    [crowTrainFeatT crowTestFeatT windTrainFeatT windTestFeatT engineTrainFeatT engineTestFeatT]];
 
-%% algoritmo di PCA
-disp('Eseguo l`algoritmo di PCA su tutte le features...');
-
-featMatrix = [[[crowTrainFeatF,crowTrainFeatT];[crowTestFeatF,crowTestFeatT]];
-    [[windTrainFeatF,windTrainFeatT];[windTestFeatF,windTestFeatT]];
-    [[engineTrainFeatF,engineTrainFeatT];[engineTestFeatF,engineTestFeatT]]];
-featMatrix = normalize(featMatrix);
-
+[featMatrix, ~, ~] = safe_normalize(featMatrix); 
 
 [~,score,~,~,explained] = pca(featMatrix);
 
-fprintf('Numero di coefficienti che spiegano più del 80 della varianza: %d\n\n', find(cumsum(explained) >= 80, 1));
+fprintf('Number of coefficients which offer at least 80_percent of variance: %d\n\n', find(cumsum(explained) >= 80, 1));
 figure;
 hold on;
 bar(cumsum(explained));
-
-yline(80, '--k', '80% Varianza', 'LabelHorizontalAlignment', 'left');
-
-ylabel('Varianza Cumulativa (%)');
-xlabel('Numero di Componenti');
-title('Numero di Componenti per Superare l’80% della Varianza');
+yline(80, '--k', '80% Variance', 'LabelHorizontalAlignment', 'left');
+ylabel('Cumulative variance (%)');
+xlabel('Number of coefficients');
+title('Number of coefficients which offer at least 80% of variance');
 grid on;
 hold off;
 
-
-C = [ones(size([crowTrainFeatF;crowTestFeatF], 1), 1); ...  
-     2 * ones(size([windTrainFeatF;windTestFeatF], 1), 1); ... 
-     3 * ones(size([engineTrainFeatF;engineTestFeatF], 1), 1)]; 
+C = [ones(size([crowTrainFeatF crowTestFeatF], 2), 1); ...  
+     2 * ones(size([windTrainFeatF windTestFeatF], 2), 1); ... 
+     3 * ones(size([engineTrainFeatF engineTestFeatF], 2), 1)]; 
 
 figure;
 scatter3(score(:, 1), score(:, 2), score(:, 3), 36, C);
-
-xlabel('Prima componente principale');
-ylabel('Seconda componente principale');
-zlabel('Terza componente principale');
-title('PCA con colorazione per gruppi');
-
+xlabel('1st principal component');
+ylabel('2nd principal component');
+zlabel('3rd principal component');
+title('PCA with coloured groups');
 colormap([1 0 0; 0.8 0.2 1; 1 0.8 0]);
 
+fprintf('Program execution time: %.2fs.\n\n', toc);
 
-
-fprintf('Tempo impiegato ad eseguire il programma: %.2fs.\n\n', toc);
-
-disp('------------------------------');
-disp('|    ESECUZIONE CONCLUSA     |');
-disp('------------------------------');
+disp('--------------------------------');
+disp('|      END OF THE PROGRAM      |');
+disp('--------------------------------');

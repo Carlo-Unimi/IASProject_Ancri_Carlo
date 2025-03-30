@@ -13,8 +13,8 @@ addpath(genpath(uigetdir(pwd, 'Select the "[IASPROJECT] Ancri Carlo" dir.')));
 file_separator(datasetPath, subFolders);
 tic; % timer
 
-windowLength = 1;
-stepLength = 0.6;
+windowLength = 0.30; % seconds
+stepLength = 0.15; % seconds
 
 % estrae tutte le features
 fprintf('Extracting [Crow] features...');

@@ -1,34 +1,34 @@
-function [classTrainFeatF, classTrainFeatT, classTestFeatF, classTestFeatT] = extractAllFeats(classSubFolderPath, windowLength, stepLength)
+function [TrFeatF, TrFeatT, TeFeatF, TeFeatT] = extractAllFeats(subFolPath, wL, sL)
 
 
-classTrainFiles = dir(fullfile(classSubFolderPath, 'training', '*.ogg'));
-classTestFiles = dir(fullfile(classSubFolderPath, 'testing', '*.ogg'));
+classTrainFiles = dir(fullfile(subFolPath, 'training', '*.ogg'));
+classTestFiles = dir(fullfile(subFolPath, 'testing', '*.ogg'));
 
-classTrainFeatF = []; classTrainFeatT = [];
+TrFeatF = []; TrFeatT = [];
 for i = 1:length(classTrainFiles)
-    [C, S, E, R, F, mfccs] = freqFeatures(classTrainFiles(i).name, windowLength, stepLength);
+    [C, S, E, R, F, mfccs] = freqFeatures(classTrainFiles(i).name, wL, sL);
     tmp = [C; S; E; R; F; mfccs];
-    classTrainFeatF = [classTrainFeatF tmp];
+    TrFeatF = [TrFeatF tmp];
 
-    [Et, EEt, Z] = timedomainFeats(classTrainFiles(i).name, windowLength, stepLength);
+    [Et, EEt, Z] = timedomainFeats(classTrainFiles(i).name, wL, sL);
     tmp = [Et; EEt; Z];
-    classTrainFeatT = [classTrainFeatT tmp];
+    TrFeatT = [TrFeatT tmp];
 end
 
-classTestFeatF = []; classTestFeatT = [];
+TeFeatF = []; TeFeatT = [];
 for i = 1:length(classTestFiles)
-    [C, S, E, R, F, mfccs] = freqFeatures(classTestFiles(i).name, windowLength, stepLength);
+    [C, S, E, R, F, mfccs] = freqFeatures(classTestFiles(i).name, wL, sL);
     tmp = [C; S; E; R; F; mfccs];
-    classTestFeatF = [classTestFeatF tmp];
+    TeFeatF = [TeFeatF tmp];
 
-    [Et, EEt, Z] = timedomainFeats(classTestFiles(i).name, windowLength, stepLength);
+    [Et, EEt, Z] = timedomainFeats(classTestFiles(i).name, wL, sL);
     tmp = [Et; EEt; Z];
-    classTestFeatT = [classTestFeatT tmp];
+    TeFeatT = [TeFeatT tmp];
 end
 
-classTrainFeatF(isnan(classTrainFeatF)) = 0;
-classTrainFeatT(isnan(classTrainFeatT)) = 0;
-classTestFeatF(isnan(classTestFeatF)) = 0;
-classTestFeatT(isnan(classTestFeatT)) = 0;
+TrFeatF(isnan(TrFeatF)) = 0;
+TrFeatT(isnan(TrFeatT)) = 0;
+TeFeatF(isnan(TeFeatF)) = 0;
+TeFeatT(isnan(TeFeatT)) = 0;
 
 end

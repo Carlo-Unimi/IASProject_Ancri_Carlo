@@ -9,7 +9,8 @@ subFolders = ["110 - Crow", "207 - Wind", "505 - Engine"];
 
 datasetPath = uigetdir(pwd, 'Select the dataset dir.');
 addpath(genpath(datasetPath));
-addpath(genpath(uigetdir(pwd, 'Select the "[IASPROJECT] Ancri Carlo" dir.')));
+disp('Adding the project folder (and all its subfolders) to the MATLAB path...');
+addpath(genpath(pwd));
 file_separator(datasetPath, subFolders);
 tic; % timer
 

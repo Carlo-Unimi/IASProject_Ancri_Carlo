@@ -17,7 +17,7 @@ tic; % timer
 windowLength = 0.30; % seconds
 stepLength = 0.15; % seconds
 
-% estrae tutte le features
+
 fprintf('Extracting [Crow] features...');
 [crowTrainFeatF, crowTrainFeatT, crowTestFeatF, crowTestFeatT] = extractAllFeats(fullfile(datasetPath, subFolders(1)), windowLength, stepLength);
 fprintf(' completed.\n');

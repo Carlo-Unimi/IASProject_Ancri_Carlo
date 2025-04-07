@@ -89,7 +89,7 @@ timeTestFeat = (timeTestFeat - repmat(mn, size(timeTestFeat, 1), 1)) ./repmat(st
 
 [timeRecognRate, ~] = knnTrainer(timeTrainFeat, timeTestFeat, all_Labels', ground_truth, k);
 [~, a] = max(timeRecognRate);
-timeMdl = fitcknn(timeTrainFeat, all_Labels', 'NumNeighbors', a);
+timeMdl = fitcknn(timeTrainFeat, all_Labels', 'NumNeighbors', k(a));
 
 % KNN [ONLY FREQ FEATS]
 freqTrainFeat = [crowTrainFeatF windTrainFeatF engineTrainFeatF];
@@ -101,7 +101,7 @@ freqTestFeat = (freqTestFeat - repmat(mn, size(freqTestFeat, 1), 1)) ./repmat(st
 
 [freqRecognRate, ~] = knnTrainer(freqTrainFeat, freqTestFeat, all_Labels', ground_truth, k);
 [~, a] = max(freqRecognRate);
-freqMdl = fitcknn(freqTrainFeat, all_Labels', 'NumNeighbors', a);
+freqMdl = fitcknn(freqTrainFeat, all_Labels', 'NumNeighbors', k(a));
 
 % KNN [ALL FEATS]
 allTrainFeat = [[crowTrainFeatT windTrainFeatT engineTrainFeatT]; [crowTrainFeatF windTrainFeatF engineTrainFeatF]];
@@ -113,7 +113,7 @@ allTestFeat = (allTestFeat - repmat(mn, size(allTestFeat, 1), 1)) ./repmat(st, s
 
 [allRecognRate, ~] = knnTrainer(allTrainFeat, allTestFeat, all_Labels', ground_truth, k);
 [~, a] = max(allRecognRate);
-allMdl = fitcknn(allTrainFeat, all_Labels', 'NumNeighbors', a);
+allMdl = fitcknn(allTrainFeat, all_Labels', 'NumNeighbors', k(a));
 
 % kNN's recognition rate graphs
 recGraphs = figure;
